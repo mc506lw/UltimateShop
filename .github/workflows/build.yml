@@ -1,0 +1,39 @@
+name: Pre release
+
+on:
+  [push]
+    
+jobs:
+  build:
+    name: Gradle-Build
+    runs-on: ubuntu-latest  # 使用最新 Runner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4  # 更新到最新
+      
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4  # 更新到最新
+        with:
+          java-version: 17
+          distribution: 'zulu'
+          cache: 'gradle'
+        
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4  # 更新到最新
+        with:
+          name: build-artifacts
+          path: target/*.jar
+
+      - name: Auto release
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: latest
+          prerelease: false
+          files: |
+            target/*.jar
